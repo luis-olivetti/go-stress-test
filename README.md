@@ -24,3 +24,11 @@ Ao final dos testes, apresentar um relatório contendo:
 - Quantidade total de requisições realizadas.
 - Quantidade de requisições com status HTTP 200.
 - Distribuição de outros códigos de status HTTP (como 404, 500, etc.).
+
+---
+
+### Como testar?
+
+```shell
+$ go run main.go stress -u http://www.google.com -c 5 -r 100
+```

@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"sync"
 	"time"
+
+	"github.com/briandowns/spinner"
 )
 
 type Stress struct {
@@ -28,6 +30,10 @@ func NewStress(urlStr string, concurrency, requests int) *Stress {
 }
 
 func (s *Stress) Run() {
+	spin := spinner.New(spinner.CharSets[43], 100*time.Millisecond)
+	spin.Color("red")
+	spin.Start()
+
 	initTime := time.Now()
 
 	var wg sync.WaitGroup
@@ -39,12 +45,12 @@ func (s *Stress) Run() {
 			httpClient := &http.Client{}
 
 			for j := 0; j < s.requests; j++ {
-				fmt.Printf("Concurrency %d -> Fazendo solicitação %d de %d\n", c, j+1, s.requests)
+				//fmt.Printf("Concurrency %d -> Fazendo solicitação %d de %d\n", c, j+1, s.requests)
 
 				resp, err := makeRequest(httpClient, &wg, s.url.String())
 
 				if err != nil {
-					fmt.Printf("Erro ao fazer solicitação: %s\n", err)
+					//fmt.Printf("Erro ao fazer solicitação: %s\n", err)
 					continue
 				}
 
@@ -57,6 +63,8 @@ func (s *Stress) Run() {
 	wg.Wait()
 
 	finalTime := time.Now()
+
+	spin.Stop()
 
 	fmt.Println("Relatório de solicitações:")
 	fmt.Printf("Tempo total decorrido: %s\n", finalTime.Sub(initTime))

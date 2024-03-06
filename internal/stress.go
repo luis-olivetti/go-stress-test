@@ -15,7 +15,6 @@ type Stress struct {
 	concurrency  int
 	requests     int
 	responseData map[int]int
-	mu           sync.Mutex
 }
 
 func NewStress(urlStr string, concurrency, requests int) *Stress {
@@ -48,19 +47,18 @@ func (s *Stress) Run() {
 	for i := 0; i < s.requests; i++ {
 		chanReq <- s.url.String()
 	}
+	// Sinaliza as go routines que não terá mais requisições
 	close(chanReq)
 
-	go func() {
-		wg.Wait()
-		close(chanResp)
-	}()
+	wg.Wait()
+	close(chanResp)
 
+	var respCount int
 	for resp := range chanResp {
 		if resp != nil {
-			s.mu.Lock()
 			s.responseData[resp.StatusCode]++
-			s.mu.Unlock()
 		}
+		respCount++
 	}
 
 	finalTime := time.Now()
@@ -68,10 +66,11 @@ func (s *Stress) Run() {
 	spin.Stop()
 
 	fmt.Println("\nReport:")
-	fmt.Printf("\nTotal time: %s\n", finalTime.Sub(initTime))
+	fmt.Printf("\n> Total time: %s\n", finalTime.Sub(initTime))
+	fmt.Printf("\n> Total requisitions: %d\n\n", respCount)
 
 	for statusCode, count := range s.responseData {
-		fmt.Printf("HTTP Code %d: %d req(s)\n", statusCode, count)
+		fmt.Printf("> HTTP Code %d: %d req(s)\n", statusCode, count)
 	}
 }
 
@@ -90,6 +89,7 @@ func execute(requests chan string, responses chan *http.Response, wg *sync.WaitG
 
 	httpClient := &http.Client{}
 
+	// Quando vai ler o channel requests, ele fica bloqueado até que tenha algo para ler
 	for url := range requests {
 		resp, err := makeRequest(httpClient, url)
 		if err != nil {

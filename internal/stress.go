@@ -36,45 +36,46 @@ func (s *Stress) Run() {
 
 	initTime := time.Now()
 
+	chanReq := make(chan string, s.requests)
+	chanResp := make(chan *http.Response, s.requests)
+
 	var wg sync.WaitGroup
 	for i := 0; i < s.concurrency; i++ {
 		wg.Add(1)
-		go func(c int) {
-			defer wg.Done()
-
-			httpClient := &http.Client{}
-
-			for j := 0; j < s.requests; j++ {
-				//fmt.Printf("Concurrency %d -> Fazendo solicitação %d de %d\n", c, j+1, s.requests)
-
-				resp, err := makeRequest(httpClient, &wg, s.url.String())
-
-				if err != nil {
-					//fmt.Printf("Erro ao fazer solicitação: %s\n", err)
-					continue
-				}
-
-				s.mu.Lock()
-				s.responseData[resp.StatusCode]++
-				s.mu.Unlock()
-			}
-		}(i)
+		go execute(chanReq, chanResp, &wg)
 	}
-	wg.Wait()
+
+	for i := 0; i < s.requests; i++ {
+		chanReq <- s.url.String()
+	}
+	close(chanReq)
+
+	go func() {
+		wg.Wait()
+		close(chanResp)
+	}()
+
+	for resp := range chanResp {
+		if resp != nil {
+			s.mu.Lock()
+			s.responseData[resp.StatusCode]++
+			s.mu.Unlock()
+		}
+	}
 
 	finalTime := time.Now()
 
 	spin.Stop()
 
-	fmt.Println("Relatório de solicitações:")
-	fmt.Printf("Tempo total decorrido: %s\n", finalTime.Sub(initTime))
+	fmt.Println("\nReport:")
+	fmt.Printf("\nTotal time: %s\n", finalTime.Sub(initTime))
 
 	for statusCode, count := range s.responseData {
-		fmt.Printf("Código de status %d: %d solicitações\n", statusCode, count)
+		fmt.Printf("HTTP Code %d: %d req(s)\n", statusCode, count)
 	}
 }
 
-func makeRequest(client *http.Client, wg *sync.WaitGroup, url string) (*http.Response, error) {
+func makeRequest(client *http.Client, url string) (*http.Response, error) {
 	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
@@ -82,4 +83,20 @@ func makeRequest(client *http.Client, wg *sync.WaitGroup, url string) (*http.Res
 	defer resp.Body.Close()
 
 	return resp, nil
+}
+
+func execute(requests chan string, responses chan *http.Response, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	httpClient := &http.Client{}
+
+	for url := range requests {
+		resp, err := makeRequest(httpClient, url)
+		if err != nil {
+			resp = &http.Response{
+				StatusCode: 500,
+			}
+		}
+		responses <- resp
+	}
 }

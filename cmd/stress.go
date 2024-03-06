@@ -10,12 +10,14 @@ import (
 var stressCmd = &cobra.Command{
 	Use:   "stress",
 	Short: "Execute a stress test on the server.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `The stress command initiates a stress test on the specified server URL by simulating multiple concurrent requests.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+This command sends a configurable number of requests to the specified URL concurrently, allowing you to stress-test the server's performance under load.
+
+Example:
+  stress -u http://example.com -c 10 -r 100
+
+This example initiates a stress test on http://example.com with 10 concurrent requests and 100 total requests.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if !cmd.Flags().Changed("url") {
 			return errors.New("required flag 'url' not set")
@@ -34,7 +36,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(stressCmd)
 
-	stressCmd.Flags().StringP("url", "u", "", "The URL to stress test.")
+	stressCmd.Flags().StringP("url", "u", "", "The URL to stress test. (required)")
 	stressCmd.Flags().IntP("concurrency", "c", 1, "The number of concurrent requests to make.")
 	stressCmd.Flags().IntP("requests", "r", 1, "The number of requests to make.")
 }

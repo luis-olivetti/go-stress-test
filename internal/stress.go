@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
+	"github.com/luis-olivetti/go-stresstest/internal/model"
 )
 
 type Stress struct {
@@ -28,7 +29,7 @@ func NewStress(urlStr string, concurrency, requests int) *Stress {
 	}
 }
 
-func (s *Stress) Run() {
+func (s *Stress) Run() *model.Report {
 	spin := spinner.New(spinner.CharSets[43], 100*time.Millisecond)
 	spin.Color("red")
 	spin.Start()
@@ -65,11 +66,19 @@ func (s *Stress) Run() {
 
 	spin.Stop()
 
-	fmt.Println("\nReport:")
-	fmt.Printf("\n> Total time: %s\n", finalTime.Sub(initTime))
-	fmt.Printf("\n> Total requisitions: %d\n\n", respCount)
+	return &model.Report{
+		TotalTime:     finalTime.Sub(initTime),
+		TotalRequests: respCount,
+		HTTPCodes:     s.responseData,
+	}
+}
 
-	for statusCode, count := range s.responseData {
+func (s *Stress) PrintReport(report *model.Report) {
+	fmt.Println("\nReport:")
+	fmt.Printf("\n> Total time: %s\n", report.TotalTime)
+	fmt.Printf("\n> Total requests: %d\n\n", report.TotalRequests)
+
+	for statusCode, count := range report.HTTPCodes {
 		fmt.Printf("> HTTP Code %d: %d req(s)\n", statusCode, count)
 	}
 }

@@ -29,7 +29,9 @@ This example initiates a stress test on http://example.com with 10 concurrent re
 		concurrency, _ := cmd.Flags().GetInt("concurrency")
 		requests, _ := cmd.Flags().GetInt("requests")
 
-		internal.NewStress(urlStr, concurrency, requests).Run()
+		stress := internal.NewStress(urlStr, concurrency, requests)
+		report := stress.Run()
+		stress.PrintReport(report)
 	},
 }
 

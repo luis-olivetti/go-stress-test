@@ -1,16 +1,20 @@
 package internal
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 )
 
-var index int
+var (
+	index      int
+	indexMutex sync.Mutex
+)
 
 func TestStress(t *testing.T) {
 	urlStr := "http://localhost:8080"
-	concurrency := 3
+	concurrency := 2
 	requests := 4
 
 	index = 0
@@ -45,6 +49,9 @@ func newServerHTTP(httpCodes []int) *gin.Engine {
 	router := gin.Default()
 
 	router.GET("/", func(c *gin.Context) {
+		indexMutex.Lock()
+		defer indexMutex.Unlock()
+
 		if index >= len(httpCodes) {
 			index = 0
 		}

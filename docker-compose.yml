@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  stresstest:
+    container_name: stresstest
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile.prod}
+    stdin_open: ${IS_DEV:-false}
+    tty: ${IS_DEV:-false}
+
+    ports:
+      - "8080:8080"

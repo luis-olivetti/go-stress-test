@@ -52,7 +52,7 @@ Conecte-se no container **stresstest** e execute o serviço:
 
 ```shell
 $ docker compose exec stresstest sh
-$ go run main.go stress
+$ go run main.go stress -u http://www.google.com -c 5 -r 100
 ```
 
 Dica: Utilize a extensão **Remote Development** no **VSCode** para realizar um ´Attach to running container´.
@@ -76,7 +76,7 @@ O contêiner **stresstest** estará pronto para uso.
 #### Como testar?
 
 ```shell
-$ go run main.go stress -u http://www.google.com -c 5 -r 100
+$ ./go-stresstest stress -u http://www.google.com -c 5 -r 100
 ```
 
 ### Testes unitários

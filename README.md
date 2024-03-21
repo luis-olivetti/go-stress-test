@@ -2,9 +2,12 @@
 
 ## Descrição do Desafio:
 
-**Objetivo:** Criar um sistema CLI em Go para realizar testes de carga em um serviço web.
+**Objetivo:** 
+Criar um sistema CLI em Go para realizar testes de carga em um serviço web. O usuário deverá fornecer a URL do serviço, o número total de requests e a quantidade de chamadas simultâneas.
 
-O usuário deve fornecer os seguintes parâmetros via CLI:
+O sistema deverá gerar um relatório com informações específicas após a execução dos testes.
+
+Entrada de Parâmetros via CLI:
 
 - `--url`: URL do serviço a ser testado.
 - `--requests`: Número total de requisições.
@@ -24,6 +27,13 @@ Ao final dos testes, apresentar um relatório contendo:
 - Quantidade total de requisições realizadas.
 - Quantidade de requisições com status HTTP 200.
 - Distribuição de outros códigos de status HTTP (como 404, 500, etc.).
+
+
+### Execução da aplicação:
+
+- Poderemos utilizar essa aplicação fazendo uma chamada via docker. Ex:
+  - docker run <sua imagem docker> —url=http://google.com —requests=1000 —concurrency=10
+
 
 ---
 

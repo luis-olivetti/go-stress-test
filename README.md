@@ -85,6 +85,14 @@ O contêiner **stresstest** estará pronto para uso.
 
 #### Como testar?
 
+Via imagem docker:
+
+```shell
+$ docker run stress-test stress -u http://www.google.com -c 5 -r 100
+```
+
+Via conexão ao contêiner:
+
 ```shell
 $ ./go-stresstest stress -u http://www.google.com -c 5 -r 100
 ```
